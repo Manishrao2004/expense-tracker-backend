@@ -1,3 +1,4 @@
+const jwt= require("jsonwebtoken")
 const bcrypt = require('bcrypt')
 const pool = require('../config/db')
 
@@ -43,16 +44,18 @@ exports.login= async (req,res)=>{
                 error:"Invalid email or password",
             })
         }
+
+        const token= jwt.sign(
+            {userId: user.id, email:user.email},
+            process.env.JWT_SECRET,
+            {expiresIn:"1h"}
+        )
         res.json({
             message:"Login successful",
-            user:{
-                id:user.id,
-                email: user.email,
-            },
-
+            token,
         })
-
     }
+    
     catch(error){
         console.log.error(error)
         res.status(500).json({

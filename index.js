@@ -6,9 +6,11 @@ app.use(express.json())
 
 const healthRoutes = require("./src/routes/health.routes")
 const authRoutes= require("./src/routes/auth.routes")
+const protectedRoutes = require("./src/routes/protected.routes")
 
 app.use(healthRoutes)
 app.use(authRoutes)
+app.use(protectedRoutes)
 
 const PORT= process.env.PORT
 app.listen(PORT,()=>{
