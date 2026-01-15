@@ -17,6 +17,7 @@ exports.addExpense= async(req,res)=>{
     }
 }
 
+
 exports.getExpenses= async (req,res)=>{
     try{
         const userId = req.user.userId
@@ -70,3 +71,55 @@ exports.getExpenses= async (req,res)=>{
         })
     }
     }
+
+
+exports.deleteExpense = async(req,res)=>{
+    try {
+        const userId=req.user.userId
+        const expenseId = req.params.id
+
+        const result = await pool.query(`delete from expenses where id=$1 and user_id=$2 returning *`,[expenseId,userId])
+        
+        if (result.rows.length===0){
+            return res.status(404).json({
+                error: "Expense not found or not authorized",
+            })
+        }
+
+        res.json({
+            message:"Expense deleted",
+            expense: result.rows[0],
+        })
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({error: "Failed to delete expense"})
+    }
+}
+
+exports.updateExpense= async (req,res)=>{
+try {
+    const userId= req.user.userId
+    const expenseId= req.params.id
+    const {amount, category}=req.body;
+
+    const result = await pool.query(
+        `update expenses set amount=$1, category=$2 where id=$3 and user_id=$4 returning *
+        `,[amount,category,expenseId,userId]
+    )
+
+    if (result.rows.length===0){
+        return res.status(404).json({
+            error:"Expense not found or not authorized",
+        })
+    }
+
+    res.json({
+        message:"Expense updated",
+        expense: result.rows[0],
+    })
+
+} catch (error) {
+    console.error(error);
+    res.status(500).json({error: "Failed to update expense"})
+}
+}
