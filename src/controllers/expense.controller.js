@@ -20,13 +20,51 @@ exports.addExpense= async(req,res)=>{
 exports.getExpenses= async (req,res)=>{
     try{
         const userId = req.user.userId
-        const result = await pool.query("select * from expenses where user_id = $1 order by created_at desc",[userId])
+
+        const page = parseInt(req.query.page)||1;
+        const limit = parseInt(req.query.limit)|| 10;
+        const offset = (page -1)*limit;
+
+        let query=`
+        select * from expenses where user_id=$1
+        `;
+        let values =[userId];
+
+
+        const category = req.query.category;
+
+        if(category){
+            query += ` and category = $${values.length+1}`;
+            values.push(category);
+        }
+
+
+        const {from,to}= req.query;
+        if(from){
+            query+= ` and created_at >= $${values.length+1}`;
+            values.push(from)
+        }
+
+        if(to){
+            query+=` and created_at <= $${values.length+1}`;
+            values.push(to)
+        }
+
+        query += ` order by created_at desc limit $${values.length+1} offset $${values.length+2}`;
+
+        
+
+        values.push(limit,offset)
+        const result = await pool.query(query,values)
+
         res.json({
+            page,
+            limit,
             expenses: result.rows,
         })
     }
     catch (error){
-        console.log.error(error);
+        console.error(error);
         res.status(500).json({
             error:"Failed to fetch expenses"
         })
