@@ -1,8 +1,15 @@
 require("dotenv").config()
 const express= require('express');
 const app = express();
+const rateLimit = require("express-rate-limit")
 
-app.use(express.json())
+const limiter = rateLimit({
+    windowMs: 15*60*1000,
+    max:100,
+})
+app.use(limiter)
+
+app.use(express.json({limit: "10kb"}))
 
 const healthRoutes = require("./src/routes/health.routes")
 const authRoutes= require("./src/routes/auth.routes")
@@ -20,3 +27,5 @@ const PORT= process.env.PORT
 app.listen(PORT,()=>{
     console.log(`server running port ${PORT}`);
 })
+
+app.use(require("./src/middleware/error.middleware"));
