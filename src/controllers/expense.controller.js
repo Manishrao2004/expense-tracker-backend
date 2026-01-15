@@ -1,4 +1,5 @@
 const pool = require("../config/db")
+
 exports.addExpense= async(req,res)=>{
     try{
         const{amount, category}=req.body;
