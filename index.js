@@ -1,5 +1,7 @@
 require("dotenv").config()
+
 const express= require('express');
+const cors = require("cors")
 const app = express();
 const rateLimit = require("express-rate-limit")
 
@@ -7,7 +9,14 @@ const limiter = rateLimit({
     windowMs: 15*60*1000,
     max:100,
 })
-app.use(limiter)
+if (process.env.NODE_ENV === "production") {
+  app.use(limiter);
+}
+
+
+app.use(cors({
+    origin: "http://localhost:5173",
+}))
 
 app.use(express.json({limit: "10kb"}))
 
